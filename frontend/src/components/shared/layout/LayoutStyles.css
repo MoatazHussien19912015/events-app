@@ -1,0 +1,15 @@
+.sidebar {
+    margin: 0;
+  padding: 0;
+  width: 200px;
+  background-color: #f1f1f1;
+  height: 100%;
+  overflow: auto;
+}
+
+.sidebar * {
+    display: block;
+    color: blue;
+    padding: 16px;
+    text-decoration: none;
+  }
