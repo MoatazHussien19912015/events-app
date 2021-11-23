@@ -19,21 +19,21 @@ router.post('/add-event', jwt, (req, res) => {
                 return res.status(400).json({success: false, message: error.details[0].message});
             }
             else {
-                const event = new Event({...req.body, submittedAt: new Date(), closed: false, user});
+                const event = new Event({...req.body, submittedAt: new Date(), closed: false, user: user._id, image: user.image});
                 event.save().then(saved_event=>{
                     return res.status(201).json({success: true, event: saved_event});
                 }).catch(err=>{console.log(err); return res.status(500).json({success: false, message: err});});
             }
         }
         else {
-            console.log(err); return res.status(500).json({success: false, message: 'user doesn\'t exist'});
+            console.log(err); return res.status(404).json({success: false, message: 'user doesn\'t exist'});
         } 
     }).catch(err=>{console.log(err); return res.status(500).json({success: false, message: err});});
 });
 
 router.get('/get-events', (req, res) => {
 
-                Event.find({}).then(events => {
+                Event.find({}).sort({submittedAt: 'desc'}).then(events => {
                     if(events.length){
                         return res.status(200).json({success: true, events});
                     }
@@ -42,11 +42,28 @@ router.get('/get-events', (req, res) => {
                     }
                 })
                 .catch(err=>{console.log(err); return res.status(500).json({success: false, message: err});});
+});
+
+router.delete('/delete-event/:id', jwt, (req, res) => {
+
+    User.findById(req.user_id).then(user => {
+        if(user){
             
-               
-            
-        
-   
+            Event.findById(req.params.id).then(event => {
+                if(event){
+                    event.remove().then(deleted_event=>{
+                        return res.status(200).json({success: true, event});
+                    }).catch(err=>{console.log(err); return res.status(500).json({success: false, message: err});});
+                } else {
+                    err=>{console.log(err); return res.status(404).json({success: false, message: 'event not found'});}
+                }
+            })
+            .catch(err=>{console.log(err); return res.status(500).json({success: false, message: err});});
+        }
+        else {
+            console.log(err); return res.status(404).json({success: false, message: 'user doesn\'t exist'});
+        } 
+    }).catch(err=>{console.log(err); return res.status(500).json({success: false, message: err});});
 });
 
 module.exports = router;

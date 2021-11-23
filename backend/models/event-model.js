@@ -5,9 +5,10 @@ const EventSchema = mongoose.Schema({
     location: {type: String, required: true},
     startDate: {type: String, required: true},
     endDate: {type: String, required: true},
-    closed: {type: Boolean, required: true},
+    closed: {type: Boolean, required: false},
     submittedAt: {type: Date, default: Date.now},
-    user: {type: mongoose.Schema.Types.ObjectId, ref:'User'}
+    user: {type: mongoose.Schema.Types.ObjectId, ref:'User'},
+    image: {type: String}
 });
 
 

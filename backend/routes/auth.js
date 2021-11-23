@@ -2,6 +2,25 @@ const router = require('express').Router();
 const joi = require("@hapi/joi");
 const bcrypt = require('bcryptjs');
 const User = require('./../models/user-model');
+
+const multer = require('multer');
+const fs = require('fs');
+const path = require('path');
+const DIR = './public/uploads';
+let storage = multer.diskStorage({   
+    destination: function(req, file, cb) { 
+       cb(null, DIR);    
+    }, 
+    filename: function (req, file, cb) { 
+       cb(null , file.originalname);   
+    }
+ });
+
+ const upload = multer({ storage: storage });
+
+
+
+
 router.post('/register', (req, res) => {
 
     const schema = joi.object({username: joi.string().required(), email: joi.string().required(), password: joi.string().required()});
@@ -16,10 +35,11 @@ router.post('/register', (req, res) => {
         } else {
             const pass = bcrypt.hashSync(req.body.password, 10);
             req.body.password = pass;
+            req.body['image'] = req.body.image? req.body.image: './uploads/avatar.png';
             const new_user = new User(req.body);
             new_user.save().then(saved_user=>{
-                return res.status(200).json({success: true, user: {id: saved_user.id, username: saved_user.username, email: saved_user.email}, 
-                    token: saved_user.generate_jwt_token() });
+                return res.status(200).json({success: true, user: {id: saved_user._id, username: saved_user.username, email: saved_user.email, image: saved_user.image,
+                    token: saved_user.generate_jwt_token() } });
             }).catch(err=>{return res.status(500).json({success: false, message: err});});
         }
     }).catch(err=>{return res.status(500).json({success: false, message: err});});
@@ -39,7 +59,7 @@ router.post('/login', (req, res) => {
         const check_password = bcrypt.compareSync(req.body.password, user.password);
         if(check_password) { 
             return res.status(200).json({success: true, user: {id: user.id, username: user.username, email: user.email,
-                isAdmin: user.isAdmin, token: user.generate_jwt_token()} });
+                image: user.image, token: user.generate_jwt_token()} });
         }
         else {
             return res.status(404).json({success: false, message: 'wrong email or password'});
@@ -49,6 +69,16 @@ router.post('/login', (req, res) => {
        }
     }).catch(err=>{return res.status(500).json({success: false, message: err});});
 
+});
+
+
+router.post('/add-image', upload.single('avatar') ,(req, res) => {
+    if (req.file){ console.log(req.files);
+        let image_path =`/uploads/${req.file.filename}`;
+ 
+    return res.status(200).json({success: true, image: image_path});
+    
+} else { return res.status(500).json({success: false, message: 'can\'t add photo'});}
 });
 
 module.exports = router;

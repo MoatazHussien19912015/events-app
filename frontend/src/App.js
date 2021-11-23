@@ -1,17 +1,29 @@
 import logo from './logo.svg';
 import './App.css';
 import Layout from './components/shared/layout/Layout';
-import { Switch, Route } from 'react-router-dom';
+import { Switch, Route, Redirect } from 'react-router-dom';
 import HomePage from './components/pages/HomePage';
+import RegisterPage from './components/pages/RegisterPage';
+import LoginPage from './components/pages/LoginPage';
+import AddEvent from './components/pages/AddEvent';
+import { useSelector } from 'react-redux';
+
 
 function App() {
+  const token = useSelector((state)=> state.authReducer.user.token);
   return (
             
               <Switch>
                 <Layout>
-                
-                
-                <Route path="/" exact component={HomePage} />
+                <Route path="/add-event" render={props=>{
+                  if(token) {return <AddEvent {...props} />} else {
+                   return <Redirect to="/login"/>;
+                  }
+                }}  />
+                <Route path="/register"  component={RegisterPage} />
+                <Route path="/login"  component={LoginPage} />
+                <Route path="/home" exact component={HomePage} />
+                <Redirect from="*" to="/home"/>
                 </Layout>
               </Switch>
             
